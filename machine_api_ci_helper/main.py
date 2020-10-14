@@ -147,6 +147,28 @@ def process_maod(input):
 
     return K8Obj(name, input, status, description)
 
+def process_mapid(input):
+    status = 'ok'
+    name = "machine-api-controllers deployment"
+    description = "machine-api components that do the actual work itself."
+    available_found = False
+    try:
+        if input['status']['availableReplicas'] != 1:
+            status = 'problem'
+        for condition in input['status']['conditions']:
+            if condition['type'] == "Available":
+                available_found = True
+                if condition['status'] != "True":
+                    status = 'problem'
+                break
+    except Exception as e:
+        status = 'problem'
+
+    if not available_found:
+        status = 'problem'
+
+    return K8Obj(name, input, status, description)
+
 def process_artifacts(artifacts_dict):
     output_data = dict()
     output_data['maoco'] = get_item_by_name(artifacts_dict['clusteroperators.json'], "machine-api")
@@ -167,6 +189,7 @@ def generate_output_data(data):
     final = dict()
     final['maoco'] = process_maoco(data['maoco'])
     final['maod'] = process_maod(data['maod'])
+    final['mapi-controllersd'] = process_mapid(data['mapi-controllersd'])
     return final
 
 def generate_html(data):
