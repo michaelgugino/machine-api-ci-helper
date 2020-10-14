@@ -42,12 +42,11 @@ def get_mao_from_cluster_operators(cojson):
     for item in cojson['items']:
         try:
             if item['metadata']['name'] != "machine-api":
-                continue
+                continue    # print(maoco)
             del item['metadata']['managedFields']
             maoco = item
         except:
             continue
-    # print(maoco)
     return maoco
 
 def get_mao_from_deployments(depjson):
@@ -111,9 +110,10 @@ def process_maoco(input):
                   deploy and roll out the MAO'''
     available_found = False
     try:
-        for condition in input['conditions']:
+        for condition in input['status']['conditions']:
             if condition['type'] == "Available":
                 available_found = True
+
                 if condition['status'] != "True":
                     status = 'problem'
                 break
@@ -127,7 +127,8 @@ def process_maoco(input):
 
 def process_maod(input):
     status = 'ok'
-    name = "machine-api-controllers deployment"
+    name = "machine-api-operator deployment"
+    description = "MAO deployment itself."
     available_found = False
     try:
         if input['status']['availableReplicas'] != 1:
@@ -144,14 +145,17 @@ def process_maod(input):
     if not available_found:
         status = 'problem'
 
-    return K8Obj(name, input, status)
+    return K8Obj(name, input, status, description)
 
 def process_artifacts(artifacts_dict):
     output_data = dict()
     output_data['maoco'] = get_item_by_name(artifacts_dict['clusteroperators.json'], "machine-api")
-    output_data['maod'] = get_item_by_name(artifacts_dict['deployments.json'], "machine-api-controllers")
-    output_data['maomcrs'] = get_many_by_ns_and_owner(artifacts_dict['replicasets.json'], 'openshift-machine-api', 'machine-api-controllers')
-    replicaset_names = extract_names(output_data['maomcrs'])
+    output_data['maod'] = get_item_by_name(artifacts_dict['deployments.json'], "machine-api-operator")
+    output_data['mao-rs'] = get_many_by_ns_and_owner(artifacts_dict['replicasets.json'], 'openshift-machine-api', 'machine-api-operator')
+    output_data['mapi-controllersd'] = get_item_by_name(artifacts_dict['deployments.json'], "machine-api-controllers")
+    output_data['mapi-mcrs'] = get_many_by_ns_and_owner(artifacts_dict['replicasets.json'], 'openshift-machine-api', 'machine-api-controllers')
+    replicaset_names = extract_names(output_data['mapi-mcrs'])
+    replicaset_names += extract_names(output_data['mao-rs'])
     mapipods = []
     for name in replicaset_names:
         pods = get_many_by_ns_and_owner(artifacts_dict['pods.json'], 'openshift-machine-api', name)
@@ -162,6 +166,7 @@ def process_artifacts(artifacts_dict):
 def generate_output_data(data):
     final = dict()
     final['maoco'] = process_maoco(data['maoco'])
+    final['maod'] = process_maod(data['maod'])
     return final
 
 def generate_html(data):
