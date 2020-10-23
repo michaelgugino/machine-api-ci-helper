@@ -36,6 +36,21 @@ html_template_string = '''<html>
                     </pre>
                 </div>
             </div>
+
+            {% for item in data['mao-rs'] %}
+            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+            <div class="collapse" id="{{ item.name }}">
+                <p>{{ item.description }}</p>
+                <div class="k8sraw">
+                    <pre>
+                        <code>
+{{ item.data }}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            {% endfor %}
+
             <button class="btn btn-primary k8sobjstatus{{ data['mapi-controllersd'].status }}" type="button" data-toggle="collapse" data-target="#mapi-controllersd" aria-expanded="false" aria-controls="mapi-controllersd">{{ data['mapi-controllersd'].name }}</button>
             <div class="collapse" id="mapi-controllersd">
                 <p>{{ data['mapi-controllersd'].description }}</p>
@@ -47,6 +62,21 @@ html_template_string = '''<html>
                     </pre>
                 </div>
             </div>
+
+            {% for item in data['mapi-mcrs'] %}
+            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+            <div class="collapse" id="{{ item.name }}">
+                <p>{{ item.description }}</p>
+                <div class="k8sraw">
+                    <pre>
+                        <code>
+{{ item.data }}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            {% endfor %}
+
         </div>
     </body>
 </html>

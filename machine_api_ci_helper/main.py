@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import requests
 import os
@@ -25,16 +26,45 @@ class K8Obj:
         self.description = description
 
 
-def gather(artifacts_url):
+def create_artifact_pathstring(basedir, url):
+    s = hashlib.sha256(url.encode("utf-8")).hexdigest()
+    return os.path.join(basedir, s)
+
+def gather(artifacts_url, artifact_pathstring):
     artifacts_dict = dict()
     for asset in ASSETS:
         r = requests.get(artifacts_url + asset)
         artifacts_dict[asset] = r.json()
+        with open(os.path.join(artifact_pathstring, asset), 'wb') as f:
+            f.write(r.content)
 
     for asset in GZIPPED_ASSETS:
         r = requests.get(artifacts_url + asset)
-        artifacts_dict[asset] = json.loads(zlib.decompress(r.content, zlib.MAX_WBITS|32))
+        content = zlib.decompress(r.content, zlib.MAX_WBITS|32)
+        artifacts_dict[asset] = json.loads(content)
+        with open(os.path.join(artifact_pathstring, asset), 'wb') as f:
+            f.write(content)
     return artifacts_dict
+
+def read_from_local(artifact_pathstring):
+    artifacts_dict = dict()
+    for asset in ASSETS + GZIPPED_ASSETS:
+        with open(os.path.join(artifact_pathstring, asset), 'rb') as f:
+            artifacts_dict[asset] = json.load(f)
+    return artifacts_dict
+
+def setup_artifacts(artifact_pathstring, refetch, artifacts_url):
+    needs_download = False
+    if not os.path.exists(artifact_pathstring):
+        os.mkdir(artifact_pathstring)
+        needs_download = True
+    artifacts_dict = False
+    if needs_download or refetch:
+        artifacts_dict = gather(artifacts_url, artifact_pathstring)
+    else:
+        artifacts_dict = read_from_local(artifact_pathstring)
+    return artifacts_dict
+
 
 def get_mao_from_cluster_operators(cojson):
     print("processing cluster operators")
@@ -125,49 +155,52 @@ def process_maoco(input):
 
     return K8Obj(name, input, status, description)
 
-def process_maod(input):
+def process_scalable(input, hasConditions=False):
     status = 'ok'
+    available_found = not hasConditions
+    print("available found1:", available_found)
+
+    try:
+        if input['status']['availableReplicas'] != 1:
+            status = 'problem'
+        if hasConditions:
+            for condition in input['status']['conditions']:
+                if condition['type'] == "Available":
+                    available_found = True
+                    if condition['status'] != "True":
+                        status = 'problem'
+                    break
+    except Exception as e:
+        status = 'problem'
+
+    print("available found2:", available_found)
+
+    if not available_found:
+        status = 'problem'
+
+    print("returning status:", status)
+    return status
+
+def process_maod(input):
     name = "machine-api-operator deployment"
     description = "MAO deployment itself."
-    available_found = False
-    try:
-        if input['status']['availableReplicas'] != 1:
-            status = 'problem'
-        for condition in input['status']['conditions']:
-            if condition['type'] == "Available":
-                available_found = True
-                if condition['status'] != "True":
-                    status = 'problem'
-                break
-    except Exception as e:
-        status = 'problem'
+    return K8Obj(name, input, process_scalable(input, hasConditions=True), description)
 
-    if not available_found:
-        status = 'problem'
-
-    return K8Obj(name, input, status, description)
+def process_maors(input):
+    name = "machine-api-operator replicaset {}".format(input['metadata']['name'])
+    description = "machine-api-operator replicaset"
+    return K8Obj(name, input, process_scalable(input), description)
 
 def process_mapid(input):
-    status = 'ok'
     name = "machine-api-controllers deployment"
     description = "machine-api components that do the actual work itself."
-    available_found = False
-    try:
-        if input['status']['availableReplicas'] != 1:
-            status = 'problem'
-        for condition in input['status']['conditions']:
-            if condition['type'] == "Available":
-                available_found = True
-                if condition['status'] != "True":
-                    status = 'problem'
-                break
-    except Exception as e:
-        status = 'problem'
+    return K8Obj(name, input, process_scalable(input, hasConditions=True), description)
 
-    if not available_found:
-        status = 'problem'
+def process_mapirs(input):
+    name = "machine-api-controllers replicaset {}".format(input['metadata']['name'])
+    description = "machine-api-controllers replicaset"
+    return K8Obj(name, input, process_scalable(input), description)
 
-    return K8Obj(name, input, status, description)
 
 def process_artifacts(artifacts_dict):
     output_data = dict()
@@ -190,12 +223,20 @@ def generate_output_data(data):
     final['maoco'] = process_maoco(data['maoco'])
     final['maod'] = process_maod(data['maod'])
     final['mapi-controllersd'] = process_mapid(data['mapi-controllersd'])
+    final['mao-rs'] = list()
+    for i in data['mao-rs']:
+        final['mao-rs'].append(process_maors(i))
+    final['mapi-mcrs'] = list()
+    for i in data['mapi-mcrs']:
+        final['mapi-mcrs'].append(process_mapirs(i))
     return final
 
-def generate_html(data):
+def generate_html(data, artifact_pathstring):
     html = output_template.template.render(data=data)
-    fd, path = tempfile.mkstemp(suffix=".html")
-    with os.fdopen(fd, 'w') as f:
+    # fd, path = tempfile.mkstemp(suffix=".html")
+    # with os.fdopen(fd, 'w') as f:
+    path = os.path.join(artifact_pathstring, "results.html")
+    with open(path, 'w') as f:
         f.write(html)
 
     print("file created:", path)
@@ -205,13 +246,27 @@ def main():
         description='Parse must gather assets from CI run')
     parser.add_argument('artifacts_url', metavar='ARTIFACTS_URL',
                         help='artifacts url with must gather data')
+    parser.add_argument('--output-dir', type=str, default="/tmp",
+                        help='Base directory to create output artifacts')
+    parser.add_argument('--refetch', type=bool, default=False,
+                        help='Re-download artifacts for processing')
     args = parser.parse_args()
 
     artifacts_url = args.artifacts_url
-    artifacts_dict = gather(artifacts_url)
+    output_dir = args.output_dir
+    refetch = args.refetch
+
+    if not os.path.exists(output_dir) or not os.path.isdir(output_dir):
+        print("output-dir invalid, need existing directory. exiting")
+        os.Exit(1)
+
+    artifact_pathstring = create_artifact_pathstring(output_dir, artifacts_url)
+    print("Using directory {} for artifacts".format(artifact_pathstring))
+
+    artifacts_dict = setup_artifacts(artifact_pathstring, refetch, artifacts_url)
     filtered_data = process_artifacts(artifacts_dict)
     output_data = generate_output_data(filtered_data)
-    generate_html(output_data)
+    generate_html(output_data, artifact_pathstring)
 
 
 
