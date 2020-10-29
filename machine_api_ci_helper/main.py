@@ -246,12 +246,6 @@ def process_machine(input, msmd):
     except:
         status = 'problem'
 
-    try:
-        name = input['metadata']['name']
-        del input['metadata']['managedFields']
-    except:
-        status = 'problem'
-
     owner = 'unowned'
     # TODO: Determine if master based on role
 
@@ -263,7 +257,7 @@ def process_machine(input, msmd):
         pass
 
     try:
-        if item['status']['phase'] != "Running":
+        if input['status']['phase'] != "Running":
             status = 'problem'
     except:
         status = 'problem'
