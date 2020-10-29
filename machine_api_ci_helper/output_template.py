@@ -14,6 +14,7 @@ html_template_string = '''<html>
     </head>
     <body>
         <div id="main">
+<h2>Operator, Deployments, ReplicaSets</h2>
             <button class="btn btn-primary k8sobjstatus{{ data['maoco'].status }}" type="button" data-toggle="collapse" data-target="#maoco" aria-expanded="false" aria-controls="maoco">{{ data['maoco'].name }}</button>
             <div class="collapse" id="maoco">
                 <p>{{ data['maoco'].description }}</p>
@@ -76,6 +77,118 @@ html_template_string = '''<html>
                 </div>
             </div>
             {% endfor %}
+
+<br>
+<h2>Pods</h2>
+            {% for item in data['mapipods'] %}
+            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+            <div class="collapse" id="{{ item.name }}">
+                <p>{{ item.description }}</p>
+                <div class="k8sraw">
+                    <pre>
+                        <code>
+{{ item.data }}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            {% endfor %}
+
+<br>
+<h2>CRD Artifacts</h2>
+<br>
+<h3>Master Machines</h3>
+Note: If a master machine is owned by a machineset it won't appear here
+<br>
+            {% for item in data['msmd']['masters'] %}
+            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+            <div class="collapse" id="{{ item.name }}">
+                <p>{{ item.description }}</p>
+                <div class="k8sraw">
+                    <pre>
+                        <code>
+{{ item.data }}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            {% endfor %}
+
+<br>
+<h3>Un-Owned</h3>
+These are machines without an ownerReference (machineset, typically)
+<br>
+
+            {% for item in data['msmd']['unowned'] %}
+            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+            <div class="collapse" id="{{ item.name }}">
+                <p>{{ item.description }}</p>
+                <div class="k8sraw">
+                    <pre>
+                        <code>
+{{ item.data }}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            {% endfor %}
+
+<br>
+<h3>Missing Owner</h3>
+These are machines with an ownerReference that is either not a machineset or
+the corresponding machineset was not found.
+<br>
+
+            {% for item in data['msmd']['missing-owner'] %}
+            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+            <div class="collapse" id="{{ item.name }}">
+                <p>{{ item.description }}</p>
+                <div class="k8sraw">
+                    <pre>
+                        <code>
+{{ item.data }}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            {% endfor %}
+
+<br>
+<h3>Machine Sets</h3>
+These are machinesets and any corresponding machines we found.
+<br>
+
+{% for item in data['machinesets'] %}
+<h4>MachineSet: {{ item.name }}</h4>
+            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+            <div class="collapse" id="{{ item.name }}">
+                <p>{{ item.description }}</p>
+                <div class="k8sraw">
+                    <pre>
+                        <code>
+{{ item.data }}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+
+<br>
+<h5>Owned Machines</h5>
+    {% for m in data['msmd'][item.name] %}
+            <button class="btn btn-primary k8sobjstatus{{ m.status }}" type="button" data-toggle="collapse" data-target="#{{ m.name }}" aria-expanded="false" aria-controls="{{ m.name }}">{{ m.name }}</button>
+            <div class="collapse" id="{{ m.name }}">
+                <p>{{ m.description }}</p>
+                <div class="k8sraw">
+                    <pre>
+                        <code>
+{{ m.data }}
+                        </code>
+                    </pre>
+                </div>
+            </div>
+    {% endfor %}
+<br>
+{% endfor %}
 
         </div>
     </body>

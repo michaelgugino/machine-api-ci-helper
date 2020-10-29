@@ -155,6 +155,17 @@ def process_maoco(input):
 
     return K8Obj(name, input, status, description)
 
+def condition_is_true(input, key):
+    try:
+        for condition in input['status']['conditions']:
+            if condition['type'] == key:
+                if condition['status'] == "True":
+                    return True
+                return False
+    except Exception as e:
+        return False
+    return False
+
 def process_scalable(input, hasConditions=False):
     status = 'ok'
     available_found = not hasConditions
@@ -163,20 +174,12 @@ def process_scalable(input, hasConditions=False):
     try:
         if input['status']['availableReplicas'] != 1:
             status = 'problem'
-        if hasConditions:
-            for condition in input['status']['conditions']:
-                if condition['type'] == "Available":
-                    available_found = True
-                    if condition['status'] != "True":
-                        status = 'problem'
-                    break
     except Exception as e:
         status = 'problem'
 
-    print("available found2:", available_found)
-
-    if not available_found:
-        status = 'problem'
+    if hasConditions:
+        if not condition_is_true(input, "Available"):
+            status = 'problem'
 
     print("returning status:", status)
     return status
@@ -201,6 +204,76 @@ def process_mapirs(input):
     description = "machine-api-controllers replicaset"
     return K8Obj(name, input, process_scalable(input), description)
 
+def process_pod(input):
+    name = input['metadata']['name']
+    description = 'Important pod'
+    status = 'ok'
+    if not condition_is_true(input, "Ready"):
+        status = 'problem'
+    return K8Obj(name, input, status, description)
+
+def process_machineset(input, msmd):
+    description = "A machineset"
+    status = 'ok'
+    name = "Broken machineset??"
+    try:
+        name = input['metadata']['name']
+        del input['metadata']['managedFields']
+    except:
+        status = 'problem'
+
+    msmd[name] = list()
+
+    try:
+        AvailableReplicas = input['status']['availableReplicas']
+        SpecReplicas = input['spec']['replicas']
+        StatusReplicas = input['status']['replicas']
+        if SpecReplicas != AvailableReplicas or SpecReplicas != StatusReplicas:
+            status = 'problem'
+    except:
+        status = 'problem'
+
+    return K8Obj(name, input, status, description)
+
+def process_machine(input, msmd):
+    description = "A machine"
+    status = 'ok'
+    name = "Broken machine??"
+
+    try:
+        name = input['metadata']['name']
+        del input['metadata']['managedFields']
+    except:
+        status = 'problem'
+
+    try:
+        name = input['metadata']['name']
+        del input['metadata']['managedFields']
+    except:
+        status = 'problem'
+
+    owner = 'unowned'
+    # TODO: Determine if master based on role
+
+    try:
+        # TODO: account for multiple owner references and grab machineset only.
+        owner = input['metadata']['ownerReferences'][0]['name']
+        print(owner)
+    except:
+        pass
+
+    try:
+        if item['status']['phase'] != "Running":
+            status = 'problem'
+    except:
+        status = 'problem'
+
+    if owner not in msmd:
+        owner = 'missing-owner'
+
+    msmd[owner].append(K8Obj(name, input, status, description))
+
+
 
 def process_artifacts(artifacts_dict):
     output_data = dict()
@@ -216,6 +289,15 @@ def process_artifacts(artifacts_dict):
         pods = get_many_by_ns_and_owner(artifacts_dict['pods.json'], 'openshift-machine-api', name)
         mapipods += pods
     output_data['mapipods'] = mapipods
+
+    # CRD Artificats
+    # We don't really need to extract anything here, just process later
+    output_data['machinesets'] = artifacts_dict['machinesets.json']['items']
+    output_data['machines'] = artifacts_dict['machines.json']['items']
+    output_data['nodes']  = artifacts_dict['nodes.json']['items']
+    output_data['csr'] = artifacts_dict['csr.json']['items']
+
+
     return output_data
 
 def generate_output_data(data):
@@ -229,6 +311,24 @@ def generate_output_data(data):
     final['mapi-mcrs'] = list()
     for i in data['mapi-mcrs']:
         final['mapi-mcrs'].append(process_mapirs(i))
+    final['mapipods'] = list()
+    for p in data['mapipods']:
+        final['mapipods'].append(process_pod(p))
+    #machineset/machine dict mapping
+    msmd = dict()
+    msmd['masters'] = list()
+    msmd['unowned'] = list()
+    msmd['missing-owner'] = list()
+    final['machinesets'] = list()
+    for ms in data['machinesets']:
+        # this will update msmd with each MS name
+        final['machinesets'].append(process_machineset(ms, msmd))
+    for m in data['machines']:
+        # This will populate populate the corresponding dictlist in msmd
+        process_machine(m, msmd)
+    final['msmd'] = msmd
+
+
     return final
 
 def generate_html(data, artifact_pathstring):
