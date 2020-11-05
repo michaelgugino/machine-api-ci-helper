@@ -14,6 +14,12 @@ html_template_string = '''<html>
     </head>
     <body>
         <div id="main">
+<h1>Cluster Operators</h1>
+        {% for data in operators %}
+        <button class="btn btn-primary k8sobjstatus{{ data['status'] }}" type="button" data-toggle="collapse" data-target="#{{ data['name'] }}" aria-expanded="false" aria-controls="{{ data['name'] }}">{{ data['name'] }}</button>
+        {% endfor %}
+        {% for data in operators %}
+        <div class="collapse" id="{{ data['name'] }}">
 <h2>Operator, Deployments, ReplicaSets</h2>
             <button class="btn btn-primary k8sobjstatus{{ data['maoco'].status }}" type="button" data-toggle="collapse" data-target="#maoco" aria-expanded="false" aria-controls="maoco">{{ data['maoco'].name }}</button>
             <div class="collapse" id="maoco">
@@ -189,7 +195,8 @@ These are machinesets and any corresponding machines we found.
     {% endfor %}
 <br>
 {% endfor %}
-
+    </div>
+{% endfor %}
         </div>
     </body>
 </html>

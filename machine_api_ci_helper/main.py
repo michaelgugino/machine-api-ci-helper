@@ -325,8 +325,8 @@ def generate_output_data(data):
 
     return final
 
-def generate_html(data, artifact_pathstring):
-    html = output_template.template.render(data=data)
+def generate_html(operators, artifact_pathstring):
+    html = output_template.template.render(operators=operators)
     # fd, path = tempfile.mkstemp(suffix=".html")
     # with os.fdopen(fd, 'w') as f:
     path = os.path.join(artifact_pathstring, "results.html")
@@ -360,7 +360,14 @@ def main():
     artifacts_dict = setup_artifacts(artifact_pathstring, refetch, artifacts_url)
     filtered_data = process_artifacts(artifacts_dict)
     output_data = generate_output_data(filtered_data)
-    generate_html(output_data, artifact_pathstring)
+    # TODO: make this an actual list of operators
+    output_data['name'] = "machine-api-operator"
+    output_data['status'] = "problem"
+    od2 = output_data.copy()
+    od2['name'] = "other-operator"
+    od2['status'] = "ok"
+    operators = (output_data, od2)
+    generate_html(operators, artifact_pathstring)
 
 
 
