@@ -14,208 +14,245 @@ html_template_string = '''<html>
 </head>
 <body>
     <div id="main" class="container-fluid">
-        <h1>Cluster Operators</h1>
+        <!-- main row -->
+        <div class="row">
+            <!-- operator column -->
+            <div class="col-sm-6">
+
+                <h1>Cluster Operators</h1>
 {% for data in operators %}
-        <button class="btn btn-primary k8sobjstatus{{ data['status'] }}" type="button" data-toggle="collapse" data-target="#{{ data['name'] }}" aria-expanded="false" aria-controls="{{ data['name'] }}">{{ data['name'] }}</button>
+                <button class="btn btn-primary k8sobjstatus{{ data['status'] }}" type="button" data-toggle="collapse" data-target="#{{ data['name'] }}" aria-expanded="false" aria-controls="{{ data['name'] }}">{{ data['name'] }}</button>
 {% endfor %}
 {% for data in operators %}
-        <div class="collapse" id="{{ data['name'] }}">
+                <!-- begin operator data block -->
+                <div class="collapse" id="{{ data['name'] }}">
 
-        <div class="row-fluid">
-            <h2>Operator, Deployments, ReplicaSets</h2>
+                    <div class="row-fluid">
+                        <h2>Operator, Deployments, ReplicaSets</h2>
 
-            <button class="btn btn-primary k8sobjstatus{{ data['maoco'].status }}" type="button" data-toggle="collapse" data-target="#maoco" aria-expanded="false" aria-controls="maoco">{{ data['maoco'].name }}</button>
-            <div class="collapse" id="maoco">
-                <p>{{ data['maoco'].description }}</p>
-                <div class="k8sraw">
-                    <pre>
-                        <code>
+                        <button class="btn btn-primary k8sobjstatus{{ data['maoco'].status }}" type="button" data-target="#maoco" aria-expanded="false" aria-controls="maoco">{{ data['maoco'].name }}</button>
+                        <div class="d-none" id="maoco">
+                            <p>{{ data['maoco'].description }}</p>
+                            <div class="k8sraw">
+                                <pre>
+                                    <code>
 {{ data['maoco'].data }}
-                        </code>
-                    </pre>
-                </div>
-            </div>
+                                    </code>
+                                </pre>
+                            </div>
+                        </div>
 
-            <button class="btn btn-primary k8sobjstatus{{ data['maod'].status }}" type="button" data-toggle="collapse" data-target="#maod" aria-expanded="false" aria-controls="maod">{{ data['maod'].name }}</button>
-            <div class="collapse" id="maod">
-                <p>{{ data['maod'].description }}</p>
-                <div class="k8sraw">
-                    <pre>
-                        <code>
+                        <button class="btn btn-primary k8sobjstatus{{ data['maod'].status }}" type="button" data-target="#maod" aria-expanded="false" aria-controls="maod">{{ data['maod'].name }}</button>
+                        <div class="d-none" id="maod">
+                            <p>{{ data['maod'].description }}</p>
+                            <div class="k8sraw">
+                                <pre>
+                                    <code>
 {{ data['maod'].data }}
-                        </code>
-                    </pre>
-                </div>
-            </div>
+                                    </code>
+                                </pre>
+                            </div>
+                        </div>
 
 {% for item in data['mao-rs'] %}
-            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
-            <div class="collapse" id="{{ item.name }}">
-                <p>{{ item.description }}</p>
-                <div class="k8sraw">
-                    <pre>
-                        <code>
+                        <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+                        <div class="d-none" id="{{ item.name }}">
+                            <p>{{ item.description }}</p>
+                            <div class="k8sraw">
+                                <pre>
+                                    <code>
 {{ item.data }}
-                        </code>
-                    </pre>
-                </div>
-            </div>
+                                    </code>
+                                </pre>
+                            </div>
+                        </div>
 {% endfor %}
 
-            <button class="btn btn-primary k8sobjstatus{{ data['mapi-controllersd'].status }}" type="button" data-toggle="collapse" data-target="#mapi-controllersd" aria-expanded="false" aria-controls="mapi-controllersd">{{ data['mapi-controllersd'].name }}</button>
-            <div class="collapse" id="mapi-controllersd">
-                <p>{{ data['mapi-controllersd'].description }}</p>
-                <div class="k8sraw">
-                    <pre>
-                        <code>
+                        <button class="btn btn-primary k8sobjstatus{{ data['mapi-controllersd'].status }}" type="button" data-target="#mapi-controllersd" aria-expanded="false" aria-controls="mapi-controllersd">{{ data['mapi-controllersd'].name }}</button>
+                        <div class="d-none" id="mapi-controllersd">
+                            <p>{{ data['mapi-controllersd'].description }}</p>
+                            <div class="k8sraw">
+                                <pre>
+                                    <code>
 {{ data['mapi-controllersd'].data }}
-                        </code>
-                    </pre>
-                </div>
-            </div>
+                                    </code>
+                                </pre>
+                            </div>
+                        </div>
 
 {% for item in data['mapi-mcrs'] %}
-            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
-            <div class="collapse" id="{{ item.name }}">
-                <p>{{ item.description }}</p>
-                <div class="k8sraw">
-                    <pre>
-                        <code>
+                        <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+                        <div class="d-none" id="{{ item.name }}">
+                            <p>{{ item.description }}</p>
+                            <div class="k8sraw">
+                                <pre>
+                                    <code>
 {{ item.data }}
-                        </code>
-                    </pre>
-                </div>
-            </div>
+                                    </code>
+                                </pre>
+                            </div>
+                        </div>
 {% endfor %}
-        </div>
-        <hr/>
+                    </div> <!-- end of Operator, Deployments, ReplicaSets -->
+                    <hr/>
 
-        <div class="row-fluid">
-            <h2>Pods</h2>
+                    <div class="row-fluid">
+                        <h2>Pods</h2>
 
 {% for item in data['mapipods'] %}
-            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
-            <div class="collapse" id="{{ item.name }}">
-                <p>{{ item.description }}</p>
-                <div class="k8sraw">
-                    <pre>
-                        <code>
+                        <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+                        <div class="d-none" id="{{ item.name }}">
+                            <p>{{ item.description }}</p>
+                            <div class="k8sraw">
+                                <pre>
+                                    <code>
 {{ item.data }}
-                        </code>
-                    </pre>
-                </div>
-            </div>
-            {% endfor %}
+                                    </code>
+                                </pre>
+                            </div>
+                        </div>
+{% endfor %}
+                    </div> <!-- end of Pods -->
+                    <hr/>
 
-        </div>
-        <hr/>
-
-        <div class="row-fluid">
-            <h2>CRD Artifacts</h2>
-            <div class="row-fluid">
-                <h3>Master Machines</h3>
-                <p>Note: If a master machine is owned by a machineset it won't appear here</p>
+                    <div class="row-fluid">
+                        <h2>CRD Artifacts</h2>
+                        <div class="row-fluid">
+                            <h3>Master Machines</h3>
+                            <p>Note: If a master machine is owned by a machineset it won't appear here</p>
 
 {% for item in data['msmd']['masters'] %}
-                <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
-                <div class="collapse" id="{{ item.name }}">
-                    <p>{{ item.description }}</p>
-                    <div class="k8sraw">
-                        <pre>
-                            <code>
+                            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+                            <div class="d-none" id="{{ item.name }}">
+                                <p>{{ item.description }}</p>
+                                <div class="k8sraw">
+                                    <pre>
+                                        <code>
 {{ item.data }}
-                            </code>
-                        </pre>
-                    </div>
-                </div>
+                                        </code>
+                                    </pre>
+                                </div>
+                            </div>
 {% endfor %}
+                        </div> <!-- end of Master Machines -->
 
-            </div>
-
-            <div class="row-fluid">
-                <h3>Un-Owned</h3>
-                <p>These are machines without an ownerReference (machineset, typically)</p>
+                        <div class="row-fluid">
+                            <h3>Un-Owned</h3>
+                            <p>These are machines without an ownerReference (machineset, typically)</p>
 
 {% for item in data['msmd']['unowned'] %}
-                <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
-                <div class="collapse" id="{{ item.name }}">
-                    <p>{{ item.description }}</p>
-                    <div class="k8sraw">
-                        <pre>
-                            <code>
+                            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+                            <div class="d-none" id="{{ item.name }}">
+                                <p>{{ item.description }}</p>
+                                <div class="k8sraw">
+                                    <pre>
+                                        <code>
 {{ item.data }}
-                            </code>
-                        </pre>
-                    </div>
-                </div>
+                                        </code>
+                                    </pre>
+                                </div>
+                            </div>
 {% endfor %}
+                        </div> <!-- end of Un-Owned -->
 
-            </div>
-
-            <div class="row-fluid">
-                <h3>Missing Owner</h3>
-                <p>These are machines with an ownerReference that is either not a machineset or
-                the corresponding machineset was not found.</p>
+                        <div class="row-fluid">
+                            <h3>Missing Owner</h3>
+                            <p>These are machines with an ownerReference that is either not a machineset or
+                            the corresponding machineset was not found.</p>
 
 {% for item in data['msmd']['missing-owner'] %}
-                <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
-                <div class="collapse" id="{{ item.name }}">
-                    <p>{{ item.description }}</p>
-                    <div class="k8sraw">
-                        <pre>
-                            <code>
+                            <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+                            <div class="d-none" id="{{ item.name }}">
+                                <p>{{ item.description }}</p>
+                                <div class="k8sraw">
+                                    <pre>
+                                        <code>
 {{ item.data }}
-                            </code>
-                        </pre>
-                    </div>
-                </div>
+                                        </code>
+                                    </pre>
+                                </div>
+                            </div>
 {% endfor %}
+                        </div> <!-- end of Missing Owner -->
 
-            </div>
+                        <div class="row-fluid">
+                            <h3>Machine Sets</h3>
+                            <p>These are machinesets and any corresponding machines we found.</p>
 
-            <div class="row-fluid">
-                <h3>Machine Sets</h3>
-                <p>These are machinesets and any corresponding machines we found.</p>
-
-                <dl>
+                            <dl>
 {% for item in data['machinesets'] %}
-                    <dt>MachineSet: {{ item.name }}</dt>
-                    <dd>
-                    <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
-                    <div class="collapse" id="{{ item.name }}">
-                        <p>{{ item.description }}</p>
-                        <div class="k8sraw">
-                            <pre>
-                                <code>
+                                <dt>MachineSet: {{ item.name }}</dt>
+                                <dd>
+                                    <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+                                    <div class="d-none" id="{{ item.name }}">
+                                        <p>{{ item.description }}</p>
+                                        <div class="k8sraw">
+                                            <pre>
+                                                <code>
 {{ item.data }}
-                                </code>
-                            </pre>
-                        </div>
-                    </div>
+                                                </code>
+                                            </pre>
+                                        </div>
+                                    </div>
 
-                    <div class="ml-3">Owned Machines
+                                    <div class="ml-3">Owned Machines
 {% for m in data['msmd'][item.name] %}
-                    <button class="btn btn-primary k8sobjstatus{{ m.status }}" type="button" data-toggle="collapse" data-target="#{{ m.name }}" aria-expanded="false" aria-controls="{{ m.name }}">{{ m.name }}</button>
-                    <div class="collapse" id="{{ m.name }}">
-                        <p>{{ m.description }}</p>
-                        <div class="k8sraw">
-                            <pre>
-                                <code>
+                                        <button class="btn btn-primary k8sobjstatus{{ m.status }}" type="button" data-target="#{{ m.name }}" aria-expanded="false" aria-controls="{{ m.name }}">{{ m.name }}</button>
+                                        <div class="d-none" id="{{ m.name }}">
+                                            <p>{{ m.description }}</p>
+                                            <div class="k8sraw">
+                                                <pre>
+                                                    <code>
 {{ m.data }}
-                                </code>
-                            </pre>
-                        </div>
-                    </div>
+                                                    </code>
+                                                </pre>
+                                            </div>
+                                        </div>
 {% endfor %}
-                    </div>
-                    </dd>
+                                    </div>
+                                </dd>
 {% endfor %}
+                            </dl>
+                        </div> <!-- end of Machinesets -->
+                    </div> <!-- end of CRD Artifacts -->
+                </div> <!-- end of operator data block -->
+{% endfor %}
+            </div> <!-- end of operator column -->
 
-            </div>
-            </div>
-        </div>
-{% endfor %}
-    </div>
+            <div class="col-sm-6" id="codeview"></div>
+
+        </div> <!-- end of main row -->
+    </div> <!-- end of main container -->
+<script>
+function showCode(event) {
+    event.preventDefault()
+    var target = event.target
+    dataid = target.getAttribute('data-target').substr(1)
+    datahtml = document.getElementById(dataid).innerHTML
+    cvdiv = document.getElementById('codeview')
+    if (target.selected == true) {
+        target.selected = false
+        cvdiv.innerHTML = ''
+    } else {
+        resetButtons()
+        target.selected = true
+        cvdiv.innerHTML = datahtml
+    }
+}
+
+function resetButtons() {
+    const buttons = document.getElementsByTagName('button')
+    for (i = 0; i < buttons.length; i++) {
+        datatoggle = buttons[i].getAttribute('data-toggle')
+        if (datatoggle == undefined) {
+            buttons[i].selected = false
+            buttons[i].onclick = showCode
+        }
+    }
+}
+
+resetButtons()
+</script>
 </body>
 </html>
 '''
