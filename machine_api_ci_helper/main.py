@@ -7,23 +7,12 @@ import tempfile
 import zlib
 
 import output_template
+from .types import *
 
 ASSETS = ("machines.json", "nodes.json", "csr.json", "pods.json",
           "clusteroperators.json", "machinesets.json")
 
 GZIPPED_ASSETS = ("deployments.json", "replicasets.json")
-
-class K8Obj:
-    data = ''
-    name = 'unknown'
-    status = 'unknown'
-    description = 'none'
-
-    def __init__(self, name, data, status, description):
-        self.name = name
-        self.data = json.dumps(data, indent=4)
-        self.status = status
-        self.description = description
 
 
 def create_artifact_pathstring(basedir, url):
