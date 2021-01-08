@@ -1,7 +1,6 @@
 from jinja2 import Template
 
 html_template_string = '''
-<div class="collapse" id="{{ data['name'] }}">
 <h2>Operator, Deployments, ReplicaSets</h2>
     <button class="btn btn-primary k8sobjstatus{{ data['maoco'].status }}" type="button" data-toggle="collapse" data-target="#maoco" aria-expanded="false" aria-controls="maoco">{{ data['maoco'].name }}</button>
     <div class="collapse" id="maoco">
@@ -177,7 +176,6 @@ These are machinesets and any corresponding machines we found.
 {% endfor %}
 <br>
 {% endfor %}
-</div>
 '''
 
 template = Template(html_template_string)

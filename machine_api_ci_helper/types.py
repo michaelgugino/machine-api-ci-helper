@@ -3,6 +3,8 @@ from functools import wraps
 import os
 import requests
 
+import machine_api_ci_helper.templates.main
+
 class K8Obj:
     data = ''
     name = 'unknown'
@@ -30,15 +32,15 @@ class Operator:
     assets = set()
     gzipped_assets = set()
     html_template = None
+    name = "unknown"
 
     def __init__(self):
         self.rendered_html = ""
         self.data = dict()
         self.status = 'ok'
 
-
     def generate_html(self):
-        self.rendered_html = self.html_template.template.render(data=self.data)
+        self.rendered_html = self.html_template.render(data=self.data)
 
     def process_artifacts(self, artifacts_dict):
         # define this in child class
@@ -146,14 +148,16 @@ class OperatorProcessor:
         self.__setup_assets()
         self.setup_artifacts(refetch)
         self.process_artifacts()
+        self.generate_html()
+
 
     def __setup_assets(self):
         for operator in self.operators:
             self.assets.update(operator.assets)
             self.gzipped_assets.update(operator.gzipped_assets)
 
-    def generate_html():
-        html = output_template.template.render(operators=operators)
+    def generate_html(self):
+        html = machine_api_ci_helper.templates.main.template.render(operators=self.operators)
         # fd, path = tempfile.mkstemp(suffix=".html")
         # with os.fdopen(fd, 'w') as f:
         path = os.path.join(self.artifact_pathstring, "results.html")

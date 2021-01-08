@@ -1,8 +1,11 @@
 from machine_api_ci_helper.types import *
+import machine_api_ci_helper.templates.mao_template
 
 class MAO(Operator):
 
     assets = set(["machinesets.json", "machines.json", "csr.json", "nodes.json"])
+    html_template = machine_api_ci_helper.templates.mao_template.template
+    name = "machine-api-operator"
 
     def process_artifacts(self, artifacts_dict):
         data = dict()
@@ -27,8 +30,10 @@ class MAO(Operator):
         data['csr'] = artifacts_dict['csr.json']['items']
 
         self.generate_output_data(data)
+        self.generate_html()
 
     def generate_output_data(self, data):
+        #self.data is the processed data we use to generate our html.
         self.data['maoco'] = self.process_maoco(data['maoco'])
         self.data['maod'] = self.process_maod(data['maod'])
         self.data['mapi-controllersd'] = self.process_mapid(data['mapi-controllersd'])
