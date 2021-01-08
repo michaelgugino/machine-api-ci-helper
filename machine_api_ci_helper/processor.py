@@ -69,7 +69,7 @@ class OperatorProcessor:
             artifacts_dict[asset] = json.loads(content)
             with open(os.path.join(self.artifact_pathstring, asset), 'wb') as f:
                 f.write(content)
-        return artifacts_dict
+        self.artifacts_dict = artifacts_dict
 
     def read_from_local(self):
         for asset in self.assets.union(self.gzipped_assets):
