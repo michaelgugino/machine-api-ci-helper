@@ -1,4 +1,8 @@
+from machine_api_ci_helper.types import *
+
 class MAO(Operator):
+
+    assets = set(["machinesets.json", "machines.json", "csr.json", "nodes.json"])
 
     def process_artifacts(self, artifacts_dict):
         data = dict()
@@ -51,7 +55,8 @@ class MAO(Operator):
             self.process_machine(m, msmd)
         self.data['msmd'] = msmd
 
-    def self.process_maoco(self, input):
+    @detect_problem
+    def process_maoco(self, input):
         status = 'ok'
         name = "machine-api-operator cluster operator status"
         description = '''
@@ -75,29 +80,32 @@ class MAO(Operator):
         return K8Obj(name, input, status, description)
 
 
-
-
-    def self.process_maod(self, input):
+    @detect_problem
+    def process_maod(self, input):
         name = "machine-api-operator deployment"
         description = "MAO deployment itself."
-        return K8Obj(name, input, process_scalable(input, hasConditions=True), description)
+        return K8Obj(name, input, self.process_scalable(input, hasConditions=True), description)
 
-    def self.process_maors(self, input):
+    @detect_problem
+    def process_maors(self, input):
         name = "machine-api-operator replicaset {}".format(input['metadata']['name'])
         description = "machine-api-operator replicaset"
-        return K8Obj(name, input, process_scalable(input), description)
+        return K8Obj(name, input, self.process_scalable(input), description)
 
-    def self.process_mapid(self, input):
+    @detect_problem
+    def process_mapid(self, input):
         name = "machine-api-controllers deployment"
         description = "machine-api components that do the actual work itself."
-        return K8Obj(name, input, process_scalable(input, hasConditions=True), description)
+        return K8Obj(name, input, self.process_scalable(input, hasConditions=True), description)
 
-    def self.process_mapirs(self, input):
+    @detect_problem
+    def process_mapirs(self, input):
         name = "machine-api-controllers replicaset {}".format(input['metadata']['name'])
         description = "machine-api-controllers replicaset"
-        return K8Obj(name, input, process_scalable(input), description)
+        return K8Obj(name, input, self.process_scalable(input), description)
 
-    def self.process_machineset(self, input, msmd):
+    @detect_problem
+    def process_machineset(self, input, msmd):
         description = "A machineset"
         status = 'ok'
         name = "Broken machineset??"
@@ -120,7 +128,8 @@ class MAO(Operator):
 
         return K8Obj(name, input, status, description)
 
-    def self.process_machine(self, input, msmd):
+    # Don't wrap this function, it doesn't return a K8Obj instance
+    def process_machine(self, input, msmd):
         description = "A machine"
         status = 'ok'
         name = "Broken machine??"
@@ -138,7 +147,6 @@ class MAO(Operator):
         try:
             # TODO: account for multiple owner references and grab machineset only.
             owner = input['metadata']['ownerReferences'][0]['name']
-            print(owner)
         except:
             pass
 

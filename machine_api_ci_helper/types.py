@@ -1,5 +1,7 @@
 import json
-
+from functools import wraps
+import os
+import requests
 
 class K8Obj:
     data = ''
@@ -13,15 +15,27 @@ class K8Obj:
         self.status = status
         self.description = description
 
+def detect_problem(func):
+    @wraps(func)
+    def wrapper(self, *args, **kw):
+        kobj = func(self, *args, **kw)
+        if kobj.status == 'problem':
+            self.status = 'problem'
+        print("procssed: {} status {}".format(kobj.name, kobj.status))
+        return kobj
+    return wrapper
+
 class Operator:
 
+    assets = set()
+    gzipped_assets = set()
+    html_template = None
+
     def __init__(self):
-        self.html_template = None
         self.rendered_html = ""
         self.data = dict()
-        self.assets = set()
-        self.gzipped_assets = set()
         self.status = 'ok'
+
 
     def generate_html(self):
         self.rendered_html = self.html_template.template.render(data=self.data)
@@ -88,11 +102,9 @@ class Operator:
             return False
         return False
 
-    @staticmethod
-    def process_scalable(input, hasConditions=False):
+    def process_scalable(self, input, hasConditions=False):
         status = 'ok'
         available_found = not hasConditions
-        print("available found1:", available_found)
         desired_replicas = '-1'
         try:
             desired_replicas = input['spec']['replicas']
@@ -106,37 +118,49 @@ class Operator:
             status = 'problem'
 
         if hasConditions:
-            if not condition_is_true(input, "Available"):
+            if not self.condition_is_true(input, "Available"):
                 status = 'problem'
 
-        print("returning status:", status)
         return status
 
+    @detect_problem
     def process_pod(self, input):
         name = input['metadata']['name']
         description = 'Important pod'
         status = 'ok'
-        if not condition_is_true(input, "Ready"):
+        if not self.condition_is_true(input, "Ready"):
             status = 'problem'
         return K8Obj(name, input, status, description)
 
 class OperatorProcessor:
 
-    def __init__(self, operators, artifact_pathstring, artifacts_url):
+    def __init__(self, operators, artifact_pathstring, artifacts_url, refetch):
         self.operators = operators
         self.artifact_pathstring = artifact_pathstring
         self.artifacts_url = artifacts_url
-        self.assets = set("deployments.json",
-            "replicasets.json", "clusteroperators.json", "pods.json")
+        self.assets = set(["deployments.json",
+            "replicasets.json", "clusteroperators.json", "pods.json"])
         self.gzipped_assets = set()
         self.artifacts_dict = dict()
         self.errors = []
         self.__setup_assets()
+        self.setup_artifacts(refetch)
+        self.process_artifacts()
 
     def __setup_assets(self):
         for operator in self.operators:
             self.assets.update(operator.assets)
             self.gzipped_assets.update(operator.gzipped_assets)
+
+    def generate_html():
+        html = output_template.template.render(operators=operators)
+        # fd, path = tempfile.mkstemp(suffix=".html")
+        # with os.fdopen(fd, 'w') as f:
+        path = os.path.join(self.artifact_pathstring, "results.html")
+        with open(path, 'w') as f:
+            f.write(html)
+
+        print("file created:", path)
 
     def gather(self):
         artifacts_dict = dict()
@@ -155,7 +179,7 @@ class OperatorProcessor:
         return artifacts_dict
 
     def read_from_local(self):
-        for asset in self.assets + self.gzipped_assets:
+        for asset in self.assets.union(self.gzipped_assets):
             try:
                 path = os.path.join(self.artifact_pathstring, asset)
                 with open(path, 'rb') as f:
@@ -171,8 +195,11 @@ class OperatorProcessor:
         if not os.path.exists(self.artifact_pathstring):
             os.mkdir(self.artifact_pathstring)
             needs_download = True
-        artifacts_dict = False
         if needs_download or refetch:
             self.gather()
         else:
             self.read_from_local()
+
+    def process_artifacts(self):
+        for operator in self.operators:
+            operator.process_artifacts(self.artifacts_dict)
