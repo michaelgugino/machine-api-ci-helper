@@ -6,16 +6,13 @@ import os
 import tempfile
 import zlib
 
-from machine_api_ci_helper.types import *
-from machine_api_ci_helper.mao import *
-
+from machine_api_ci_helper.processor import OperatorProcessor as OP
+import machine_api_ci_helper.mao
+import machine_api_ci_helper.todo
 
 def create_artifact_pathstring(basedir, url):
     s = hashlib.sha256(url.encode("utf-8")).hexdigest()
     return os.path.join(basedir, s)
-
-def setup_operators():
-    return (MAO(),)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -40,7 +37,7 @@ def main():
     print("Using directory {} for artifacts".format(artifact_pathstring))
 
 
-    op = OperatorProcessor(setup_operators(), artifact_pathstring, artifacts_url, refetch)
+    op = OP(artifact_pathstring, artifacts_url, refetch)
 
 
 

@@ -5,7 +5,7 @@ class MAO(Operator):
 
     assets = set(["machinesets.json", "machines.json", "csr.json", "nodes.json"])
     html_template = machine_api_ci_helper.templates.mao_template.template
-    name = "machine-api-operator"
+    name = "machine-api"
 
     def process_artifacts(self, artifacts_dict):
         data = dict()
