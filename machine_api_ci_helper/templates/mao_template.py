@@ -82,6 +82,26 @@ html_template_string = '''
     {% endfor %}
 
 <br>
+<h2>CSRs</h2>
+In a healthy cluster, there should be no unapproved CSRs.
+<br>
+<button class="btn btn-primary k8sobjstatus{{ data['csrd']['status'] }}" type="button" data-toggle="collapse" data-target="#csrs" aria-expanded="false" aria-controls="csrs">CSRs</button>
+<div class="collapse" id="csrs">
+    {% for item in data['csrd']['items'] %}
+    <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+    <div class="collapse" id="{{ item.name }}">
+        <p>{{ item.description }}</p>
+        <div class="k8sraw">
+            <pre>
+                <code>
+{{ item.data }}
+                </code>
+            </pre>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
 <h2>CRD Artifacts</h2>
 <br>
 <h3>Master Machines</h3>

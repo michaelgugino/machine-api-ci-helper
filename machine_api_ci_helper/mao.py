@@ -59,6 +59,40 @@ class MAO(Operator):
             # This will populate populate the corresponding dictlist in msmd
             self.process_machine(m, msmd)
         self.data['msmd'] = msmd
+        self.data['csrd'] = self.process_csrs(data['csr'])
+
+
+    @detect_problem
+    def process_csr(self, csr):
+        status = 'problem'
+        name = "unknown"
+        description = 'a CSR'
+        try:
+            name = csr['metadata']['name']
+            del csr['metadata']['managedFields']
+        except:
+            pass
+
+        try:
+            for condition in csr['status']['conditions']:
+                if condition['type'] == 'Approved':
+                    status = 'ok'
+        except Exception as e:
+            pass
+
+        return K8Obj(name, csr, status, description)
+
+
+    def process_csrs(self, input):
+        csrd = dict()
+        csrd['status'] = 'ok'
+        csrd['items'] = list()
+        for csr in input:
+            kobj = self.process_csr(csr)
+            if kobj.status == 'problem':
+                csrd['status'] = 'problem'
+            csrd['items'].append(kobj)
+        return csrd
 
     @detect_problem
     def process_maoco(self, input):
