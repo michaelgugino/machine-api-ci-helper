@@ -82,6 +82,27 @@ html_template_string = '''
     {% endfor %}
 
 <br>
+<h2>Nodes</h2>
+Node objects for your convenience
+<br>
+<button class="btn btn-primary k8sobjstatus{{ data['nodes']['status'] }}" type="button" data-toggle="collapse" data-target="#nodes" aria-expanded="false" aria-controls="nodes">Nodes</button>
+<div class="collapse" id="nodes">
+    {% for item in data['nodes']['items'] %}
+    <button class="btn btn-primary k8sobjstatus{{ item.status }}" type="button" data-toggle="collapse" data-target="#{{ item.name }}" aria-expanded="false" aria-controls="{{ item.name }}">{{ item.name }}</button>
+    <div class="collapse" id="{{ item.name }}">
+        <p>{{ item.description }}</p>
+        <div class="k8sraw">
+            <pre>
+                <code>
+{{ item.data }}
+                </code>
+            </pre>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<br>
 <h2>CSRs</h2>
 In a healthy cluster, there should be no unapproved CSRs.
 <br>

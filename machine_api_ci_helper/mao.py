@@ -60,7 +60,34 @@ class MAO(Operator):
             self.process_machine(m, msmd)
         self.data['msmd'] = msmd
         self.data['csrd'] = self.process_csrs(data['csr'])
+        self.data['nodes'] = self.process_nodes(data['nodes'])
 
+
+    @detect_problem
+    def process_node(self, node):
+        status = 'ok'
+        name = "unknown"
+        description = 'a node'
+        try:
+            name = node['metadata']['name']
+            del node['metadata']['managedFields']
+        except:
+            pass
+
+        if not self.condition_is_true(node, "Ready"):
+            status = 'problem'
+        return K8Obj(name, node, status, description)
+
+    def process_nodes(self, input):
+        noded = dict()
+        noded['status'] = 'ok'
+        noded['items'] = list()
+        for node in input:
+            kobj = self.process_node(node)
+            if kobj.status == 'problem':
+                noded['status'] = 'problem'
+            noded['items'].append(kobj)
+        return noded
 
     @detect_problem
     def process_csr(self, csr):
