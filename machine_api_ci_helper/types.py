@@ -111,7 +111,7 @@ class Operator:
             status = 'problem'
 
         try:
-            if input['status']['availableReplicas'] != desired_replicas:
+            if desired_replicas > 0 and input['status']['availableReplicas'] != desired_replicas:
                 status = 'problem'
         except Exception as e:
             status = 'problem'
