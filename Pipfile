@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+requests = "==2.24.0"
+Jinja2 = "==2.11.2"
+
+[requires]
+python_version = "3"
+
+[scripts]
+helper = "python main.py"
