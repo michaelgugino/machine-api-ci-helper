@@ -9,4 +9,4 @@ WORKDIR /opt/app-root/
 ADD . /opt/app-root/
 
 # Install packages specified in requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install .
