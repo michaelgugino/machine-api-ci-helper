@@ -30,7 +30,6 @@ class MAO(Operator):
         data['csr'] = artifacts_dict['csr.json']['items']
 
         self.generate_output_data(data)
-        self.generate_html()
 
     def generate_output_data(self, data):
         #self.data is the processed data we use to generate our html.
@@ -61,6 +60,8 @@ class MAO(Operator):
         self.data['msmd'] = msmd
         self.data['csrd'] = self.process_csrs(data['csr'])
         self.data['nodes'] = self.process_nodes(data['nodes'])
+
+        self.tree = self.generate_tree()
 
 
     @detect_problem

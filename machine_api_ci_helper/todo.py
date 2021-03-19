@@ -11,7 +11,6 @@ class TODO(Operator):
         data = dict()
         data['operator'] = self.get_item_by_name(artifacts_dict['clusteroperators.json'], self.name)
         self.generate_output_data(data)
-        self.generate_html()
 
     def generate_output_data(self, data):
         #self.data is the processed data we use to generate our html.

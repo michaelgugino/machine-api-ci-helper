@@ -2,6 +2,15 @@ import json
 from functools import wraps
 
 
+class Section:
+    def __init__(self, name, heading, status, description):
+      self.name = name
+      self.heading = heading
+      self.status = status
+      self.description = description
+      self.sections = []
+      self.objects = []
+
 class K8Obj:
     data = ''
     name = 'unknown'
@@ -34,7 +43,11 @@ class Operator:
     def __init__(self):
         self.rendered_html = ""
         self.data = dict()
+        self.tree = dict()
         self.status = 'ok'
+
+    def generate_tree(self):
+        return Section(self.name, self.heading, self.status, self.description)
 
     def generate_html(self):
         self.rendered_html = self.html_template.render(data=self.data)

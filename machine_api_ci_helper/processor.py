@@ -1,4 +1,5 @@
 import json
+import jsonpickle
 import os
 import requests
 import machine_api_ci_helper.templates.main
@@ -21,6 +22,7 @@ class OperatorProcessor:
         self.add_todo_operators()
         self.process_artifacts()
         self.generate_html()
+        self.generate_json()
 
     def setup_operators(self):
         self.operators = [machine_api_ci_helper.mao.MAO()]
@@ -55,15 +57,27 @@ class OperatorProcessor:
 
         print("file created:", path)
 
+    def generate_json(self):
+        res = jsonpickle.encode(self.operators)
+        # fd, path = tempfile.mkstemp(suffix=".html")
+        # with os.fdopen(fd, 'w') as f:
+        path = os.path.join(self.artifact_pathstring, "results.json")
+        with open(path, 'w') as f:
+            f.write(res)
+
+        print("file created:", path)
+
     def gather(self):
         artifacts_dict = dict()
         for asset in self.assets:
+            print("Fetching: ", asset)
             r = requests.get(self.artifacts_url + asset)
             artifacts_dict[asset] = r.json()
             with open(os.path.join(self.artifact_pathstring, asset), 'wb') as f:
                 f.write(r.content)
 
         for asset in self.gzipped_assets:
+            print("Fetching: ", asset)
             r = requests.get(self.artifacts_url + asset)
             content = zlib.decompress(r.content, zlib.MAX_WBITS|32)
             artifacts_dict[asset] = json.loads(content)
@@ -96,3 +110,5 @@ class OperatorProcessor:
     def process_artifacts(self):
         for operator in self.operators:
             operator.process_artifacts(self.artifacts_dict)
+            if True:
+                operator.generate_html()
